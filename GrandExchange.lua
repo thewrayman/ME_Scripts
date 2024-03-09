@@ -295,18 +295,6 @@ function GE.OpenGE()
     end
 end
 
-function GE.OpenGEWithWait()
-    if GE.IsInGE() then
-        while not GE.GEWindowOpen() and GE.IsNotTimedOut(30) do
-            API.DoAction_NPC(0x5, API.OFF_ACT_InteractNPC_route, { IDS.CLERK }, 50)
-            API.RandomSleep2(600,800,1200)
-        end
-        return true
-    else
-        return false
-    end
-end
-
 --- Exmaple simple script which will take a list of items - itemsToBuy
 --- And will check if you're in GE, if you're in GE it will try to open the exchange window and buy the items
 
