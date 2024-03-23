@@ -1,3 +1,20 @@
+--[[
+Author: Tinie
+Inital Release Date: 9th March 2024
+Last Update Data: 23rd March 2024
+Version 2.0
+
+--Release Notes
+* 2.0.0
+    Major changes
+        Reading the Slot data from memory
+        Checking max slot availability based on membership rather than UI
+        Added some delays into some of the status checks to hopefully make it more consistent
+
+* 1.0.0
+    Initial release for GE Buying functionality with sample script
+]]
+
 local API = require("api")
 local GE = {}
 
@@ -16,12 +33,40 @@ local VB_VALUES = {
     GEWINDOW = 82,
 }
 
-local BASE_INTERFACE = {{ 105,1,-1,-1,0 }, { 105,3,-1,1,0 }, { 105,6,-1,3,0 }}
+local BASE_INTERFACE = {
+    { 105,1,-1,-1,0 },
+    { 105,3,-1,1,0 },
+    { 105,6,-1,3,0 }
+}
 
 -- GE slot 1-8 interface component ID
-SLOT_IDS = {7, 28, 49, 70, 94, 118, 142, 166}
+MAX_SLOTS = API.IsMember() and 8 or 3
+SLOT_IDS = {table.unpack({7, 28, 49, 70, 94, 118, 142, 166}, 1, MAX_SLOTS)}
+API.logDebug("max slots: " .. MAX_SLOTS)
 
-TIMEOUT = nil
+BASE_OFFSETS = {0x38, 0x918, 0x10, 0x10, 0x48, 0xA0}
+
+SLOT_OFFSETS = {
+    STATUS = 0x10,  --comp=5,open=2, no order = 0
+    OFFER_TYPE = 0x14, -- buy (0) /sell (1)
+    ITEM_ID = 0x18,
+    PRICE = 0x20,
+    VOLUME = 0x28,
+    COMPLETED_VOLUME = 0x2C,
+    COMPLETED_VALUE = 0x30
+}
+
+---@class GESlot
+---@field STATUS number
+---@field OFFER_TYPE number
+---@field ITEM_ID number
+---@field PRICE number
+---@field VOLUME number
+---@field COMPLETED_VOLUME number
+---@field COMPLETED_VALUE number
+
+GE_PTR = 0x00D56958
+MEMLOC = nil
 
 function GE.IsInGE()
     return API.PInArea(3164, 15, 3477, 15, 0)
@@ -31,50 +76,73 @@ function GE.GEWindowOpen()
     return API.Compare2874Status(VB_VALUES.GEWINDOW, false)
 end
 
-function GE.IsTimedOut(timeout)
-    if TIMEOUT == nil then
-        TIMEOUT = os.time()
-        return false
-    else
-        if timeout > (os.time() - TIMEOUT) then
-            return false
-        else
-            API.logError(timeout .. " timeout reached, exiting current function")
-            TIMEOUT = nil
-            return true
+function GE.shallowcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
         end
+    else -- number, string, boolean, etc
+        copy = orig
     end
+    return copy
 end
 
----Checks which GE slots aren't in use and returns the interface component ID to interact with it
----@return table --table of component IDs for available GE Slots
+--- Used to grab the starting memory location for the GE data we care about
+---@return number
+function GE.GrabMemoryLocation()
+    API.logDebug("Trying to grab GE memory location")
+    local temploc = API.Mem_Read_uint64(API.Get_RSExeStart() + GE_PTR)
+    for _,offset in pairs(BASE_OFFSETS) do
+        temploc = API.Mem_Read_uint64(temploc + offset)
+    end
+    MEMLOC = temploc
+    return MEMLOC
+end
+
+---Given a slot (1-8) it will fetch the key values from memory about that slot
+---@param slot number
+---@return GESlot -- will return a table with the structure of SLOT_OFFSETS for the specified slot
+function GE.GetSlotInfoFromMemory(slot)
+    local slotBaseLocation = MEMLOC + ((slot-1) * 40)
+    local memObject = {}
+
+    for _, offset in pairs(SLOT_OFFSETS) do
+        memObject[_] = API.Mem_Read_int(slotBaseLocation + offset)
+    end
+
+    return memObject
+
+end
+
+---Will go through all slots and return a table of the details for each slot
+---@return table -- each object in the table will have the structure seen in SLOT_OFFSETS vector<GESlot>
+function GE.GetAllSlotInfoFromMemory()
+    local allSlotInfo = {}
+
+    for slot = 1,#SLOT_IDS do
+        table.insert(allSlotInfo, GE.GetSlotInfoFromMemory(slot))
+    end
+
+    return allSlotInfo
+end
+
+---Checks which GE slots aren't in use and returns a table of the slot numbers (1-8) that are currently available
+---@return table --table of component IDs for available GE Slots 
 function GE.GetAvailableSlots()
-    --TODO
-    -- find slot ids programmatically?
     local available = {}
+    local allSlots = GE.GetAllSlotInfoFromMemory()
 
-    for _,slot in pairs(SLOT_IDS) do
-        -- find GE slots without offers in (excluding the lending slot)
-        local SI = shallowcopy(BASE_INTERFACE)
-        table.insert(SI, {105,slot,-1,6,0})
-        table.insert(SI, {105,slot,1,slot,0})
-        local r = API.ScanForInterfaceTest2Get(false, SI)[1]
-
-        -- checking for slots which aren't disabled (e.g f2p user only has 3/8 slots enabled)
-        local SI_Alt = shallowcopy(BASE_INTERFACE)
-        table.insert(SI_Alt, {105,slot,-1,6,0})
-        table.insert(SI_Alt, {105,slot+22,-1,slot,0})
-        local r2 = API.ScanForInterfaceTest2Get(true, SI_Alt)
-
-        -- If it's a non-occupied GE slot AND it's not a blocked slot
-        if string.find(r.textids, "Slot") and (#r2 == 0)then
-            table.insert(available, slot)
+    for _,slot in pairs(allSlots) do
+        if (slot.STATUS == 0) then
+            table.insert(available, _)
             API.logDebug("Slot " .. _ .. " is available")
         end
     end
     API.logDebug("Found " .. #available .. " GE slots")
     return available
-
 end
 
 ---Checks the GE search results for the item, and returns the interface component ID to be used for selecting
@@ -115,7 +183,7 @@ function GE.SelectItem(itemName, itemId)
 
     if itemFound ~= nil then
         API.DoAction_Interface(0xffffffff,0xffffffff,1,105,342,itemFound,API.OFF_ACT_GeneralInterface_route)
-        API.RandomSleep2(600,300,600)
+        API.RandomSleep2(1200,300,600)
         if API.VB_FindPSettinOrder(VBS.SELECTED_ITEM, 0).state == itemId then
             API.logDebug("Successfully selected " .. itemName)
             return true
@@ -159,8 +227,8 @@ end
 ---@return boolean -- successfully opened the Buy window?
 function GE.OpenBuy(slot)
     if GE.GEWindowOpen() then
-        API.DoAction_Interface(0x24,0xffffffff,1,105,slot+8,-1,API.OFF_ACT_GeneralInterface_route)
-        API.RandomSleep2(600,600,1200)
+        API.DoAction_Interface(0x24,0xffffffff,1,105,SLOT_IDS[slot]+8,-1,API.OFF_ACT_GeneralInterface_route)
+        API.RandomSleep2(1000,600,1200)
         if API.Compare2874Status(VB_VALUES.CHAT_BOX_OPEN, true) then
             return true
         end
@@ -173,7 +241,7 @@ end
 ---@return boolean -- return if the price is successfully inputted
 function GE.SetPrice(price)
     API.DoAction_Interface(0xffffffff,0xffffffff,1,105,278,-1,API.OFF_ACT_GeneralInterface_route)
-    API.RandomSleep2(600,600,1200)
+    API.RandomSleep2(1000,600,1200)
     GE.TypeInput(tostring(price), 100)
     API.RandomSleep2(1200,600,1200)
     API.KeyboardPress2(0x0D)
@@ -189,7 +257,7 @@ end
 ---@return boolean
 function GE.SetVolume(volume)
     API.DoAction_Interface(0xffffffff,0xffffffff,1,105,237,-1,API.OFF_ACT_GeneralInterface_route)
-    API.RandomSleep2(600,600,1200)
+    API.RandomSleep2(1000,600,1200)
     GE.TypeInput(tostring(volume), 100)
     API.RandomSleep2(1200,600,1200)
     API.KeyboardPress2(0x0D)
@@ -222,23 +290,16 @@ function GE.ConfirmOrder()
     API.logDebug("Trying to confirm offer")
 end
 
----Given a specified slot (component interface ID in BASE_INTERFACE), it will return true if it has a completed order
+---Given a specified slot (number 1-8), it will return true if it has a completed order
 function GE.IsOrderComplete(slot)
-    local SI = shallowcopy(BASE_INTERFACE)
-
-    table.insert(SI, {105,slot,-1,6,0})
-    table.insert(SI, {105,slot,4,slot,0})
-
-    local r = API.ScanForInterfaceTest2Get(false, SI)
-    if #r > 0 then
-        local progress = r[1].xs
-        if progress == 154 then
-            return true
-        elseif progress > 0 then
-            API.logDebug("Slot " .. slot .. " order is partially filled")
-        else
-            API.logDebug("Slot " .. slot .. " order is not filled at all")
-        end
+    local slotInfo = GE.GetSlotInfoFromMemory(slot)
+    
+    if slotInfo.STATUS == 5 then
+        return true
+    elseif slotInfo.COMPLETED_VOLUME > 0 then
+        API.logDebug("Slot " .. slot .. " order is partially filled")
+    else
+        API.logDebug("Slot " .. slot .. " order is not filled at all")
     end
     return false
 
@@ -298,6 +359,11 @@ end
 --- Exmaple simple script which will take a list of items - itemsToBuy
 --- And will check if you're in GE, if you're in GE it will try to open the exchange window and buy the items
 
+-- local API = require("api")
+-- local GE = require("GrandExchange")
+-- API.SetDrawTrackedSkills(true)
+-- API.SetDrawLogs(true)
+
 -- local itemsToBuy = {
 --     {NAME = "Rock climbing boots", ID = 3105, VOL = 1, PRICE = 100000},
 --     {NAME = "Bucket", ID = 1925, VOL = 3, PRICE = 500},
@@ -321,7 +387,7 @@ end
 
 -- end
 
-
+GE.GrabMemoryLocation()
 
 
 return GE
