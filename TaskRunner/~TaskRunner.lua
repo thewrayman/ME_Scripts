@@ -17,6 +17,7 @@ local exampleOverrideData = {
 -- will use the BuyItems script twice, but with two different sets of data to focus on (one set stored in the BuyItems script itself, another dataset I'm passing in from above)
 TASKS = {
     {SCRIPT = "~TaskLogin", RUNTIME = 60}, -- this would be a file called "~TaskLogin.lua", which would auto-kill if it takes more than 60 seconds to finish, if in lobby, logs in, exits when in-world
+    {SCRIPT = "~TaskTest2", RUNTIME = 60}, -- dummy task which just checks if in GE
     {SCRIPT = "~Task_BuyItems", RUNTIME = 600, FOCUS = "prayer"}, -- runs ~BuyItems.lua file, will time out after 10 mins if not already ended, uses optional FOCUS param to let you choose specific features for that execution
     {SCRIPT = "~Task_BuyItems", RUNTIME = 600, FOCUS = exampleOverrideData} -- FOCUS can be overriden with a specified table if the target task script doesn't contain it already
 }
