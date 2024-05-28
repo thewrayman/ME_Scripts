@@ -22,7 +22,17 @@ TASKS = {
     {SCRIPT = "~Task_BuyItems", RUNTIME = 600, FOCUS = exampleOverrideData} -- FOCUS can be overriden with a specified table if the target task script doesn't contain it already
 }
 
-local function taskRunTime()
+--[[
+    -- Example of how I have used this in the past for fresh accounts 
+TASKS = {
+    {SCRIPT = "~TaskLogin", RUNTIME = 60}, -- this would be a file called "~TaskLogin.lua", which would auto-kill if it takes more than 60 seconds to finish, if in lobby, logs in, exits when in-world
+    {SCRIPT = "~Task_Lodestones", RUNTIME = 300}, -- runs a script to unlock lodestones
+    {SCRIPT = "~Task_Quest_Restless_Ghost", RUNTIME = 300}, -- restless ghost quest
+    {SCRIPT = "~Task_Quest_Necromancy", RUNTIME = 660} -- necromancy quest
+}
+]]
+
+local function getTaskRunTime()
     return os.time() - CURRENT_TASK.START
 end
 
@@ -63,7 +73,7 @@ while API.Read_LoopyLoop() and (#TASKS > 0) do
     drawGUI()
 
     --has the task set itself as complete or has it reached max time?
-    if CURRENT_TASK.COMPLETE or (taskRunTime() > TASKS[1].RUNTIME)then
+    if CURRENT_TASK.COMPLETE or (getTaskRunTime() > TASKS[1].RUNTIME)then
         finishTask()
     else
         CURRENT_TASK.run() -- this is basically the equivalent of the main loop
