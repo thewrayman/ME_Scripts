@@ -1,6 +1,5 @@
 local API = require("api")
 TASK = {}
-TASK.LODESTONES = require("lodestones")
 
 function TASK.setFocus(lode)
     TASK.FOCUS = lode
