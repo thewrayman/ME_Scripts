@@ -78,7 +78,7 @@ local function questFunction()
             API.RandomSleep2(500,100,200)
             API.KeyboardPress(" ")
             API.RandomSleep2(3000,100,200) -- should probably be replaced with a check for the quest interface popping up but CBA
-            API.DoAction_Interface(0x24,0xffffffff,1,1500,403,-1,API.OFF_ACT_GeneralInterface_route)
+            API.DoAction_Interface(0x24,0xffffffff,1,1500,409,-1,API.OFF_ACT_GeneralInterface_route)
             API.RandomSleep2(1100,100,200)
             CURRENT_STEP = 4
             goto continue
@@ -178,7 +178,7 @@ local function questFunction()
         end
         
         -- if coffin is closed then open it
-        if #API.GetAllObjArrayInteract({ ID.OPENCOFFIN }, 20, 0) == 0 then
+        if #API.GetAllObjArrayInteract({ ID.OPENCOFFIN }, 20, {0}) == 0 then
             API.RandomSleep2(2000,400,800)
             API.DoAction_Object1(0x31,API.OFF_ACT_GeneralObject_route0,{ ID.COFFIN },50)
             API.RandomSleep2(3000,200,400)
