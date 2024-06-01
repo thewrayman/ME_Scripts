@@ -1,4 +1,5 @@
 local API = require("api")
+local LODESTONES = require("lodestones")
 local CURRENT_TASK = nil
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(5)
@@ -22,6 +23,17 @@ TASKS = {
     {SCRIPT = "~Task_BuyItems", RUNTIME = 600, FOCUS = exampleOverrideData} -- FOCUS can be overriden with a specified table if the target task script doesn't contain it already
 }
 
+
+-- Example of what set of steps I sometimes run for a fresh account, FOCUS now allows a function passthrough so you can easily add in things like lodestone teleports
+-- TASKS = {
+--     {SCRIPT = "Task_Spawn", RUNTIME = 600},
+--     {SCRIPT = "Task_Quest_RestlessGhost", RUNTIME = 300},
+--     {SCRIPT = "Task_Lodestone", RUNTIME = 60, FOCUS=LODESTONES.DraynorVillage},
+--     {SCRIPT = "Task_Quest_Necromancy", RUNTIME = 900},
+--     {SCRIPT = "Task_Lodestone", RUNTIME = 60, FOCUS=LODESTONES.Varrock},
+--     {SCRIPT = "Task_Quest_Archaeology", RUNTIME = 600}
+-- }
+
 local function getTaskRunTime()
     return os.time() - CURRENT_TASK.START
 end
@@ -38,6 +50,8 @@ local function setTask()
             CURRENT_TASK.setFocus(TASKS[1].FOCUS)
         elseif (type(TASKS[1].FOCUS) == "table") then
             CURRENT_TASK.FOCUS = TASKS[1].FOCUS
+        elseif (type(TASKS[1].FOCUS) == "function") then
+            CURRENT_TASK.setFocus(TASKS[1].FOCUS)
         end
     end
 end
