@@ -2,10 +2,15 @@
 Author: Tinie
 Inital Release Date: 18th June 2024
 Last Update Date: 18th June 2024
-Version 2.0.0
+Version 2.1.0
 Credit to @dea.d for some of the GUI inspiration
 
 --Release Notes
+* 2.1.0
+    Major changes
+        Enable break type selection (Lobby/AFK/Random between both)
+        Extra checks for loop + lobbying
+
 * 2.0.0
     Major changes
         Moving to dedicated break file
@@ -28,7 +33,8 @@ BREAK.BREAK_SETTINGS = {
     MAX_SESSION_TIME = 3600, -- maximum amount of time to make each session last before taking a break
     BUFFER_TIME = 120, --this will account for time different between the step you want to take a break at - e.g if you want to take a break after banking, and you bank every 20 seconds, the buffer should be > 20
     MIN_BREAK_TIME = 300, -- minimum amount of time the break should last
-    MAX_BREAK_TIME = 600 -- maximum amount of time the break should last
+    MAX_BREAK_TIME = 600, -- maximum amount of time the break should last,
+    BREAK_TYPE = "Lobby" -- Lobby/AFK/Both - this will get overriden by the GUI
 }
 
 BREAKS = {}
@@ -66,6 +72,7 @@ ROWS = {
     row_offset + row_height,
     row_offset + (2*row_height),
     row_offset + (3*row_height),
+    row_offset + (4*row_height)
 }
 
 
@@ -132,29 +139,53 @@ imguiBreaksLeft.box_size = FFPOINT.new(column_width, row_height, 0)
 
 local ttbLabel = API.CreateIG_answer()
 ttbLabel.box_name = "TTB"
-ttbLabel.box_start = FFPOINT.new(COLUMNS[3], ROWS[3], 0)
+ttbLabel.box_start = FFPOINT.new(COLUMNS[3]+20, ROWS[3], 0)
 ttbLabel.box_size = FFPOINT.new(column_width, row_height, 0)
 ttbLabel.tooltip_text = "Time until next break"
 
 local imguiTimeTillNextBreak = API.CreateIG_answer()
 imguiTimeTillNextBreak.box_name = "Time To Break"
-imguiTimeTillNextBreak.box_start = FFPOINT.new(COLUMNS[4], ROWS[3]+10, 0)
+imguiTimeTillNextBreak.box_start = FFPOINT.new(COLUMNS[4]+20, ROWS[3]+10, 0)
 imguiTimeTillNextBreak.box_size = FFPOINT.new(column_width, row_height, 0)
 
 ---- ROW 4 ----
+local breakTypeLabel = API.CreateIG_answer()
+breakTypeLabel.box_name = "Type"
+breakTypeLabel.box_start = FFPOINT.new(COLUMNS[1], ROWS[4], 0)
+breakTypeLabel.box_size = FFPOINT.new(column_width, row_height, 0)
+breakTypeLabel.tooltip_text = "What type of break to take"
+
+local breakType = API.CreateIG_answer()
+breakType.box_name = "  "
+breakType.box_start = FFPOINT.new(COLUMNS[2],ROWS[4],0)
+--breakType.box_size = FFPOINT.new(2*column_width,row_height+10,0)
+breakType.stringsArr = {"Lobby", "AFK", "Both"}
+
 local ttbeLabel = API.CreateIG_answer()
 ttbeLabel.box_name = "TTBE"
-ttbeLabel.box_start = FFPOINT.new(COLUMNS[3], ROWS[4], 0)
+ttbeLabel.box_start = FFPOINT.new(COLUMNS[3]+20, ROWS[4], 0)
 ttbeLabel.box_size = FFPOINT.new(column_width, row_height, 0)
 ttbeLabel.tooltip_text = "Time till break ends"
 
 local imguiTimeTillBreakEnd = API.CreateIG_answer()
 imguiTimeTillBreakEnd.box_name = "Time till break ends"
-imguiTimeTillBreakEnd.box_start = FFPOINT.new(COLUMNS[4], ROWS[4]+10, 0)
+imguiTimeTillBreakEnd.box_start = FFPOINT.new(COLUMNS[4]+20, ROWS[4]+10, 0)
 imguiTimeTillBreakEnd.box_size = FFPOINT.new(column_width, row_height, 0)
 
+---- ROW 5 ----
+local currentTypeLabel = API.CreateIG_answer()
+currentTypeLabel.box_name = "BT"
+currentTypeLabel.box_start = FFPOINT.new(COLUMNS[3]+20, ROWS[5], 0)
+currentTypeLabel.box_size = FFPOINT.new(column_width, row_height, 0)
+currentTypeLabel.tooltip_text = "Current Break Type"
+
+local currentType = API.CreateIG_answer()
+currentType.box_name = "Current Break Type"
+currentType.box_start = FFPOINT.new(COLUMNS[4]+20, ROWS[5]+10, 0)
+currentType.box_size = FFPOINT.new(column_width, row_height, 0)
+
+
 local function calculateMaxRuntime(newSeconds)
-    API.logInfo("Updating max runtime")
     API.logInfo("Existing max runtime: " .. BREAK.BREAK_SETTINGS.TOTAL_RUNTIME_MAX)
     math.randomseed(os.time())
     BREAK.BREAK_SETTINGS.TOTAL_RUNTIME_MAX = newSeconds * math.random(90, 110)/100
@@ -205,8 +236,15 @@ local function drawGUI()
     
     if BREAK.BREAK_STATUS.ON_BREAK then
         imguiTimeTillBreakEnd.string_value = formatTime(BREAKS[1].BREAK_TIME - BREAK.BREAK_STATUS.BREAK_ELAPSED)
+        currentType.string_value = BREAKS[1].TYPE
     else
         imguiTimeTillBreakEnd.string_value = "0"
+        if #BREAKS > 0 then
+            currentType.string_value = "N/A(" .. BREAKS[1].TYPE .. ")"
+        else
+            currentType.string_value = "N/A"
+        end
+        
     end
 
     if imguiTerminate.return_click then
@@ -232,6 +270,7 @@ local function drawGUI()
     if updateMaxRuntime.return_click then
         BREAKS = {}
         calculateMaxRuntime(tonumber(hourdata.string_value) * 3600)
+        BREAK.BREAK_SETTINGS.BREAK_TYPE = breakType.string_value
         BREAK.generateBreaks()
         updateMaxRuntime.return_click = false
     end
@@ -251,6 +290,10 @@ local function drawGUI()
     API.DrawBox(breaksLabel)
     API.DrawBox(ttbLabel)
     API.DrawBox(ttbeLabel)
+    API.DrawBox(breakTypeLabel)
+    API.DrawComboBox(breakType, false)
+    API.DrawBox(currentTypeLabel)
+    API.DrawTextAt(currentType)
 end
 
 -- this will take  the settings provided (either default or overriden) and generate a list of breaks (how long until next break, how long should that break be)
@@ -260,10 +303,17 @@ function BREAK.generateBreaks(breakTable)
     local maxBreaks = math.floor(BREAK.BREAK_SETTINGS.TOTAL_RUNTIME_MAX/BREAK.BREAK_SETTINGS.MIN_SESSION_TIME)
     API.logDebug("Max breaks: " .. maxBreaks)
     math.randomseed(os.time())
-  
+    local breakTypesToUse = {}
+
+    if BREAK.BREAK_SETTINGS.BREAK_TYPE == "Both" then
+        breakTypesToUse = {"Lobby", "AFK"}
+    else
+        breakTypesToUse = {BREAK.BREAK_SETTINGS.BREAK_TYPE}
+    end
+
     for i=1, maxBreaks do
-        BREAKS[i] = {SESSION_TIME = math.random(BREAK.BREAK_SETTINGS.MIN_SESSION_TIME, BREAK.BREAK_SETTINGS.MAX_SESSION_TIME), BREAK_TIME = math.random(BREAK.BREAK_SETTINGS.MIN_BREAK_TIME, BREAK.BREAK_SETTINGS.MAX_BREAK_TIME)}
-        API.logInfo("Generated break config " .. i .. ": " .. "Session duration=" .. BREAKS[i].SESSION_TIME .. ", Break time=" .. BREAKS[i].BREAK_TIME)
+        BREAKS[i] = {SESSION_TIME = math.random(BREAK.BREAK_SETTINGS.MIN_SESSION_TIME, BREAK.BREAK_SETTINGS.MAX_SESSION_TIME), BREAK_TIME = math.random(BREAK.BREAK_SETTINGS.MIN_BREAK_TIME, BREAK.BREAK_SETTINGS.MAX_BREAK_TIME), TYPE = breakTypesToUse[math.random( #breakTypesToUse )]}
+        API.logInfo("Generated break config " .. i .. ": " .. "Session duration=" .. BREAKS[i].SESSION_TIME .. ", Break time=" .. BREAKS[i].BREAK_TIME .. ", Type=" .. BREAKS[i].TYPE)
     end
 
     BREAK.BREAK_STATUS.SESSION_START = os.time()
@@ -285,16 +335,21 @@ function BREAK.updateBreakTimers()
 end
 
 function BREAK.startBreak()
-    if API.GetGameState2() == 3 then
-        API.DoAction_Logout_mini()
-        API.RandomSleep2(5000,1000,2000)
-        API.Compare2874Status(1, true)
-        API.DoAction_then_lobby()
-        API.RandomSleep2(5000,1000,2000)
-        if not API.GetGameState2() ==2 then
-            return false
+
+    if BREAKS[1].TYPE == "Lobby" then
+        if API.GetGameState2() == 3 then
+            API.DoAction_Logout_mini()
+            API.RandomSleep2(5000,1000,2000)
+            API.Compare2874Status(1, true)
+            API.DoAction_then_lobby()
+            API.RandomSleep2(5000,1000,2000)
+            if not API.GetGameState2() ==2 then
+                return false
+            end
         end
     end
+    -- else do nothing - AFK
+
     BREAK.BREAK_STATUS.ON_BREAK = true
     BREAK.BREAK_STATUS.BREAK_ELAPSED = 0
     BREAK.BREAK_STATUS.SESSION_ELAPSED = 0
@@ -304,9 +359,11 @@ function BREAK.startBreak()
 end
 
 function BREAK.finishBreak()
-    -- login
-    --verift logged in
-    BREAK.clickLobbyButton()
+    -- TODO check at "play" screen 
+    if (API.GetGameState2() == 2) or (API.GetGameState2() == 4) then
+        BREAK.clickLobbyButton()
+    end
+    
     API.RandomSleep2(5000,2000,5000)
     if API.GetGameState2() == 3 then
         API.logInfo("Successfully logged back into the game")
