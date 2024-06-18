@@ -21,7 +21,7 @@ function BREAK.clickLobbyButton()
     API.DoAction_Interface(0xffffffff,0xffffffff,1,906,76,-1,API.OFF_ACT_GeneralInterface_route)
 end
 
-
+-- default settings, if you don't override these with your script, then it will use these
 BREAK.BREAK_SETTINGS = {
     TOTAL_RUNTIME_MAX = 10800,
     MIN_SESSION_TIME = 3200,
@@ -33,7 +33,7 @@ BREAK.BREAK_SETTINGS = {
 
 BREAKS = {}
 
-
+-- this just maintains various variables for monitoring status'
 BREAK.BREAK_STATUS = {
     ON_BREAK = false,
     BREAK_START = 0,
@@ -44,6 +44,7 @@ BREAK.BREAK_STATUS = {
 
 local maxSeconds = 0
 
+-- define constants for GUI drawing. You can chang the location of the GUI by updating box_x and box_y
 local box_x = 16
 local box_y = 50
 local column_offset = box_x + 2
@@ -51,6 +52,7 @@ local row_offset = box_y + 10
 local row_height = 30
 local column_width = 60
 
+--definition for 4 columns in the GUI
 COLUMNS = {
     column_offset,
     column_offset + column_width,
@@ -58,6 +60,7 @@ COLUMNS = {
     column_offset + (3*column_width)
 }
 
+--definition for 4 rows in the GUI
 ROWS = {
     row_offset,
     row_offset + row_height,
@@ -250,6 +253,7 @@ local function drawGUI()
     API.DrawBox(ttbeLabel)
 end
 
+-- this will take  the settings provided (either default or overriden) and generate a list of breaks (how long until next break, how long should that break be)
 function BREAK.generateBreaks(breakTable)
     API.logInfo("Generating breaks")
     BREAK.BREAK_SETTINGS = breakTable or BREAK.BREAK_SETTINGS
@@ -266,6 +270,7 @@ function BREAK.generateBreaks(breakTable)
     BREAK.BREAK_STATUS.BREAK_START = os.time()
 end
 
+-- to be called in main loop - updates GUI and updates timers for tracking TTB and TTBE
 function BREAK.updateBreakTimers()
     drawGUI()
 
@@ -315,10 +320,12 @@ function BREAK.finishBreak()
     end
 end
 
+-- throw this into mainloop checker to validate it's only in lobby when it's in a break
 function BREAK.inValidLoop()
     return ((API.GetGameState2() == 3) or ((API.GetGameState2() == 2 or API.GetGameState2() == 4) and BREAK.BREAK_STATUS.ON_BREAK))
 end
 
+-- put this check in where you're happy for the script to stop for a break. This will return true if on break, so you can use that logic to skip your script functionality where needed.
 function BREAK.checkForBreak()
     if API.ScriptRuntime() > BREAK.BREAK_SETTINGS.TOTAL_RUNTIME_MAX then
         API.Write_LoopyLoop(false)
