@@ -17,12 +17,14 @@
 
 **Example**
 
-![image](https://github.com/thewrayman/ME_Scripts/assets/9122631/10defa67-43dc-46fe-abd3-b446b40a17fa)
+![image](https://github.com/thewrayman/ME_Scripts/assets/9122631/112be8c0-d330-4835-bf3e-ebc4e9ad53d1)
 * `Hours` dropdown - total hours the script should run for
 * `TTE` = Time Till End (this will line up with the hours selected)
 * `TTB` = Time till next Break (if not in a break)
 * `TTBE` = Time til the current Break ends (if in a break)
 * `Breaks` = Number of breaks remaining
+* `Type` = What type of break to take - Lobby/AFK/Both - Both will randomly assign either Lobby or AFK to each break it plans out
+* `BT` = Break type (Lobby/AFK) - will have N/A in front if not in break yet, but will tell you type of break coming up next
 * So this will run for 3 hours (+/- 10%) with 3 total breaks, the next break happening in 24 mins from now, and 2hr 25mins until the 3hr runtime has been reached
 
 **Usage in a script**
@@ -39,7 +41,8 @@ BREAK.BREAK_SETTINGS = {
     MAX_SESSION_TIME = 4000, -- maximum amount of time to make each session last before taking a break
     BUFFER_TIME = 30, -- this will account for time different between the step you want to take a break at - e.g if you want to take a break after banking, and you bank every 20 seconds, the buffer should be > 20
     MIN_BREAK_TIME = 240, -- minimum amount of time the break should last
-    MAX_BREAK_TIME = 480 -- maximum amount of time the break should last
+    MAX_BREAK_TIME = 480, -- maximum amount of time the break should last
+    BREAK_TYPE = "Lobby" -- Lobby/AFK/Both - this will get overriden by the GUI
 }
 
  local function bank()
