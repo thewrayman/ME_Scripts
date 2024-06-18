@@ -23,12 +23,12 @@ end
 
 -- default settings, if you don't override these with your script, then it will use these
 BREAK.BREAK_SETTINGS = {
-    TOTAL_RUNTIME_MAX = 10800,
-    MIN_SESSION_TIME = 3200,
-    MAX_SESSION_TIME = 3600,
-    BUFFER_TIME = 120,
-    MIN_BREAK_TIME = 300,
-    MAX_BREAK_TIME = 600
+    TOTAL_RUNTIME_MAX = 10800, -- this will get overriden by the hours dropdown, so this doesn't matter too much
+    MIN_SESSION_TIME = 3200, -- minimum amount of time to make each session last before taking a break
+    MAX_SESSION_TIME = 3600, -- maximum amount of time to make each session last before taking a break
+    BUFFER_TIME = 120, --this will account for time different between the step you want to take a break at - e.g if you want to take a break after banking, and you bank every 20 seconds, the buffer should be > 20
+    MIN_BREAK_TIME = 300, -- minimum amount of time the break should last
+    MAX_BREAK_TIME = 600 -- maximum amount of time the break should last
 }
 
 BREAKS = {}
