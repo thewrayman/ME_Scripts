@@ -37,7 +37,7 @@ BREAK.BREAK_SETTINGS = {
     TOTAL_RUNTIME_MAX = 10800, -- this will get overriden by the hours dropdown, so this doesn't matter too much
     MIN_SESSION_TIME = 3000, -- minimum amount of time to make each session last
     MAX_SESSION_TIME = 4000, -- maximum amount of time to make each session last
-    BUFFER_TIME = 30, -- doesn't matter too much for most usages, creates a buffer if you want to take a break during a step of your script that may take some time
+    BUFFER_TIME = 30, -- this will account for time different between the step you want to take a break at - e.g if you want to take a break after banking, and you bank every 20 seconds, the buffer should be > 20
     MIN_BREAK_TIME = 240, -- minimum amount of time the break should last
     MAX_BREAK_TIME = 480 -- maximum amount of time the break should last
 }
