@@ -3,6 +3,7 @@ Author: Tinie
 Inital Release Date: 18th June 2024
 Last Update Date: 28th March 2024
 Version 2.0.0
+Credit to @dea.d for some of the GUI inspiration
 
 --Release Notes
 * 2.0.0
