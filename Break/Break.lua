@@ -332,6 +332,10 @@ function BREAK.checkForBreak()
         API.logInfo("Reached max session time, stopping script")
     end
 
+    if not BREAK.LOOP then
+        return true
+    end
+
     if not BREAK.BREAK_STATUS.ON_BREAK then
         if BREAK.BREAK_STATUS.SESSION_ELAPSED >= (BREAKS[1].SESSION_TIME - BREAK.BREAK_SETTINGS.BUFFER_TIME) then
             API.logInfo("Starting break")
