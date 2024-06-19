@@ -394,11 +394,14 @@ function BREAK.checkForBreak()
     end
 
     if not BREAK.BREAK_STATUS.ON_BREAK then
-        if BREAK.BREAK_STATUS.SESSION_ELAPSED >= (BREAKS[1].SESSION_TIME - BREAK.BREAK_SETTINGS.BUFFER_TIME) then
-            API.logInfo("Starting break")
-            BREAK.startBreak()
-            return true
+        if #BREAKS > 0 then
+            if BREAK.BREAK_STATUS.SESSION_ELAPSED >= (BREAKS[1].SESSION_TIME - BREAK.BREAK_SETTINGS.BUFFER_TIME) then
+                API.logInfo("Starting break")
+                BREAK.startBreak()
+                return true
+            end
         end
+
     else
         if BREAK.BREAK_STATUS.BREAK_ELAPSED >= (BREAKS[1].BREAK_TIME) then
             API.logInfo("Ending break, resuming session")
