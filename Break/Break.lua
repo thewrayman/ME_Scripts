@@ -358,9 +358,18 @@ function BREAK.startBreak()
     return true
 end
 
+local resumeAttempts = 0
+
 function BREAK.finishBreak()
     -- TODO check at "play" screen 
-    if (API.GetGameState2() == 2) or (API.GetGameState2() == 4) then
+    API.logDebug("Finishing break | Gamestate: " .. tostring(API.GetGameState2()))
+
+    if resumeAttempts > 3 then
+        API.logError("Failed to resume after break")
+        API.Write_LoopyLoop(false)
+    end
+    if ((API.GetGameState2() == 2) or (API.GetGameState2() == 4) and (resumeAttempts < 4)) then
+        resumeAttempts = resumeAttempts + 1
         BREAK.clickLobbyButton()
     end
     
@@ -373,6 +382,7 @@ function BREAK.finishBreak()
         BREAK.BREAK_STATUS.SESSION_ELAPSED = 0
         BREAK.BREAK_STATUS.BREAK_START = 0
         BREAK.BREAK_STATUS.SESSION_START = os.time()
+        resumeAttempts = 0
         return true
     end
 end
