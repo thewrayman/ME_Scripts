@@ -8,7 +8,7 @@
 * The listed scripts will need to contain some common function and variable names to align with the Task Runner framework
 * Existing scripts can be easily adapted to work with this
 
-### How do I modify and existing script to be compatible?
+### How do I modify an existing script to be compatible?
 
 * Simply change your **While LoopyLoop** to function `TASK.run()`
 * Define `TASK = {}` at the top of your script, and add `return TASK` at the bottom of your script
@@ -16,7 +16,7 @@
 
 ### How does it work?
 * It will grab the first task in the list (if any left) and initalise it with `setTask`
-* It will check if the task is marked as complete, or if the RUNTIME limt has been reached
+* It will check if the task is marked as complete, or if the RUNTIME limit has been reached
     * If yes, it will remove that task from the list with `finishTask`, and move onto the next task (if available)
 * the **While LoopyLoop** in `TaskRunner.lua will` be your master loop across all scripts, and it will call the `run()` function of whichever script it's processing - effectively replicating the **While LoopyLoop** for all scripts
 * Add `TASK.COMPLETE = TRUE` in your task script wherever you're happy for it to finish up - this will then signal to mark that task as finished and move onto the next task in your list (if any)
