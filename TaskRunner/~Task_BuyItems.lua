@@ -39,26 +39,65 @@ local items = {
         {NAME = "Snape grass", ID = 231, VOL = 3000, PRICE = 5000},
         {NAME = "Ranarr potion", ID = 99, VOL = 3000, PRICE = 10000},
         {NAME = "Snapdragon potion", ID = 3004, VOL = 1000, PRICE = 10000},
-        {NAME = "Red spider's eggs", ID = 223, VOL = 1000, PRICE = 2000},
-        {NAME = "Dwarf weed potion", ID = 109, VOL = 5000, PRICE = 10000},
-        {NAME = "Wine of Zamorak", ID = 245, VOL = 5000, PRICE = 5000},
-        {NAME = "Super energy", ID = 3018, VOL = 2000, PRICE = 5000},
-        {NAME = "Papaya", ID = 5972, VOL = 2000, PRICE = 5000},
+        {NAME = "Red spider", ID = 223, VOL = 1000, PRICE = 2000},
+        {NAME = "Dwarf weed potion", ID = 109, VOL = 25000, PRICE = 10000},
+        {NAME = "Wine of Zamorak", ID = 245, VOL = 25000, PRICE = 5000},
+        {NAME = "Super energy", ID = 3018, VOL = 1000, PRICE = 5000},
+        {NAME = "Papaya", ID = 5972, VOL = 1000, PRICE = 5000},
         {NAME = "Overload", ID = 55193, VOL = 1000, PRICE = 105000},
         {NAME = "Uncut opal", ID = 1625, VOL = 1000, PRICE = 2000},
         {NAME = "Uncut sapphire", ID = 1623, VOL = 2000, PRICE = 2000},
-        {NAME = "Uncut dragonstone", ID = 1631, VOL = 4000, PRICE = 7000}
+        {NAME = "Uncut dragonstone", ID = 1631, VOL = 5000, PRICE = 7000}
         }
     },
 
     {GROUP = "dxpSummoning", DATA= {
-        {NAME = "Pouch", ID = 12155, VOL = 10000, PRICE = 100},
-        {NAME = "Honeycomb", ID = 12156, VOL = 700, PRICE = 5000},
-        {NAME = "Steel bar", ID = 2353, VOL = 500, PRICE = 10000},
-        {NAME = "Mithril bar", ID = 2359, VOL = 1500, PRICE = 5000},
-        {NAME = "Fire talisman", ID = 2359, VOL = 2000, PRICE = 5000},
-        {NAME = "Water talisman", ID = 1444, VOL = 5000, PRICE = 5000}
+        {NAME = "Bucket of sand", ID = 1783, VOL = 300/2, PRICE = 1000},
+        {NAME = "Pouch", ID = 12155, VOL = 15000/2, PRICE = 100},
+        {NAME = "Honeycomb", ID = 12156, VOL = 370/2, PRICE = 5000},
+        {NAME = "Tinderbox", ID = 590, VOL = 118/2, PRICE = 2000},
+        {NAME = "Raw beef", ID = 2132, VOL = 1000/2, PRICE = 10000},
+        {NAME = "Goat horn dust", ID = 9736, VOL = 2950/2, PRICE = 10000},
+        {NAME = "Granite", ID = 6979, VOL = 2500/2, PRICE = 5000},
+        {NAME = "Mithril bar", ID = 2359, VOL = 100/2, PRICE = 5000},
+        {NAME = "Rune bar", ID = 2363, VOL = 1650/2, PRICE = 10000},
+        {NAME = "Fire talisman", ID = 1442, VOL = 2520/2, PRICE = 1000},
+        {NAME = "Water talisman", ID = 1444, VOL = 3005/2, PRICE = 5000}
         }
+    },
+
+    {GROUP = "Summoning", DATA= {
+        {NAME = "Bucket of sand", ID = 1783, VOL = 300, PRICE = 1000},
+        {NAME = "Pouch", ID = 12155, VOL = 15000, PRICE = 100},
+        {NAME = "Honeycomb", ID = 12156, VOL = 370, PRICE = 5000},
+        {NAME = "Tinderbox", ID = 590, VOL = 118, PRICE = 2000},
+        {NAME = "Raw beef", ID = 2132, VOL = 1000, PRICE = 10000},
+        {NAME = "Goat horn dust", ID = 9736, VOL = 2950, PRICE = 10000},
+        {NAME = "Granite", ID = 6979, VOL = 2500, PRICE = 5000},
+        {NAME = "Mithril bar", ID = 2359, VOL = 100, PRICE = 5000},
+        {NAME = "Rune bar", ID = 2363, VOL = 1650, PRICE = 10000},
+        {NAME = "Fire talisman", ID = 1442, VOL = 2520, PRICE = 1000},
+        {NAME = "Water talisman", ID = 1444, VOL = 3005, PRICE = 5000}
+        }
+    },
+
+    {GROUP = "zamCollection1", DATA = {
+        {NAME = "Leather scraps", ID = 49452, VOL = 22, PRICE = 10000},
+        {NAME = "Goldrune", ID = 49450, VOL = 58, PRICE = 10000},
+        {NAME = "Ruby", ID = 1603, VOL = 1, PRICE = 10000},
+        {NAME = "Third Age iron", ID = 49460, VOL = 30, PRICE = 10000},
+        {NAME = "Hellfire metal", ID = 49504, VOL = 24, PRICE = 30000},
+        {NAME = "Demonhide", ID = 49500, VOL = 36, PRICE = 10000},
+        {NAME = "Vellum", ID = 49462, VOL = 6, PRICE = 10000},
+        {NAME = "Orthenglass", ID = 49454, VOL = 26, PRICE = 10000},
+        {NAME = "Chaotic brimstone", ID = 49498, VOL = 26, PRICE = 10000},
+        {NAME = "Eye of Dagon", ID = 49502, VOL = 14, PRICE = 10000},
+        {NAME = "Samite silk", ID = 49456, VOL = 22, PRICE = 10000},
+        {NAME = "Cadmium red", ID = 49496, VOL = 30, PRICE = 20000},
+        {NAME = "White oak", ID = 49464, VOL = 6, PRICE = 10000},
+        {NAME = "Archaeology teleport", ID = 49935, VOL = 1, PRICE = 200000},
+    }
+
     }
 }
 
